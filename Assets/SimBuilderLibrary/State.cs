@@ -11,6 +11,9 @@ using static UnityEngine.EventSystems.EventTrigger;
 public class State : ModelComponent, ICloneable
 {
     public Color32 color { get; set; }
+    public int row { get; set; }
+    public int col { get; set; }
+
     private const int CacheLimit = 1000;
     public LinkedList<float> PopulationCache { get; private set; } = new();
     public LinkedListNode<float> CachePosition { get; private set; }

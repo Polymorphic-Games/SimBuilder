@@ -7,8 +7,8 @@ using static UnityEngine.EventSystems.EventTrigger;
 
 public class Model
 {
-    ModelLoader ModelLoader;
-    Model InitialModel;
+    private ModelLoader ModelLoader;
+    private Model InitialModel;
     public string ModelName = "";
     public SSA Driver = new();
     //public DTM dtm_driver = new();
@@ -16,34 +16,40 @@ public class Model
     public Dictionary<int, State> StateDictionary = new();
     public Dictionary<int, Rate> RateDictionary = new();
     public Dictionary<int, Connection> ConnectionDictionary = new();
+    public List<List<List<State>>> states = new();
 
-    event EventHandler<Dictionary<int, State>> UpdateModelStatesEvent;
-    event EventHandler<Dictionary<int, State>> StepForwardModelEvent;
-    event EventHandler<Dictionary<int, State>> StepBackwardModelEvent;
+    private event EventHandler<Dictionary<int, State>> UpdateModelStatesEvent;
 
-    event EventHandler<State> AddStateEvent;
-    event EventHandler<State> RemoveStateEvent;
+    private event EventHandler<Dictionary<int, State>> StepForwardModelEvent;
 
-    event EventHandler<Rate> AddRateEvent;
-    event EventHandler<Rate> RemoveRateEvent;
+    private event EventHandler<Dictionary<int, State>> StepBackwardModelEvent;
 
-    event EventHandler<Connection> AddConnectionEvent;
-    event EventHandler<Connection> RemoveConnectionEvent;
+    private event EventHandler<State> AddStateEvent;
+
+    private event EventHandler<State> RemoveStateEvent;
+
+    private event EventHandler<Rate> AddRateEvent;
+
+    private event EventHandler<Rate> RemoveRateEvent;
+
+    private event EventHandler<Connection> AddConnectionEvent;
+
+    private event EventHandler<Connection> RemoveConnectionEvent;
 
     public Model()
     {
         ModelLoader = new ModelLoader(this);
     }
+
     public virtual void SetInitialModelState()
     {
-
     }
 
     public void ClearModel()
     {
-        List<int> uniqueIDs = new();   
+        List<int> uniqueIDs = new();
 
-        foreach(var entry in ConnectionDictionary)
+        foreach (var entry in ConnectionDictionary)
         {
             uniqueIDs.Add(entry.Value.UniqueID);
         }
@@ -53,8 +59,7 @@ public class Model
         }
         uniqueIDs.Clear();
 
-
-        foreach (var entry in StateDictionary) 
+        foreach (var entry in StateDictionary)
         {
             uniqueIDs.Add(entry.Value.UniqueID);
         }
@@ -63,7 +68,6 @@ public class Model
             RemoveState(StateDictionary[uniqueId] as State);
         }
         uniqueIDs.Clear();
-
 
         foreach (var entry in RateDictionary)
         {
@@ -74,7 +78,6 @@ public class Model
             RemoveRate(RateDictionary[uniqueId] as Rate);
         }
         uniqueIDs.Clear();
-        
     }
 
     public void ResetModel()
@@ -82,7 +85,7 @@ public class Model
         LoadModel(InitialModel);
     }
 
-    public void LoadModel(Model newModel) 
+    public void LoadModel(Model newModel)
     {
         if (newModel == null)
         {
@@ -118,7 +121,6 @@ public class Model
         return null;
     }
 
-
     public State AddState(State state)
     {
         StateDictionary.Add(state.UniqueID, state);
@@ -129,18 +131,25 @@ public class Model
     public State AddState()
     {
         State state = new();
+        state.IsState = true;
         return AddState(state);
     }
 
-    public State AddState(string name, float value, bool isState = true)
+    public State AddState(string name, float value)
     {
         State state = new();
         state.Name = name;
         state.InitializePopulation(value);
-        state.IsState = isState;
         return AddState(state);
     }
 
+    public State AddSpatialState(string name, float value, int row, int col)
+    {
+        State state = AddState(name, value);
+        state.row = row;
+        state.col = col;
+        return state;
+    }
 
     public State RemoveState(State state)
     {
@@ -190,8 +199,6 @@ public class Model
         return AddRate(rate);
     }
 
-
-
     public Rate RemoveRate(Rate rate)
     {
         RateDictionary.Remove(rate.UniqueID);
@@ -199,13 +206,12 @@ public class Model
         return rate;
     }
 
-
     public Connection AddConnection()
     {
         Connection connection = new Connection(this);
         ConnectionDictionary.Add(connection.UniqueID, connection);
         AddConnectionEvent?.Invoke(this, connection);
-        return connection;        
+        return connection;
     }
 
     public Connection AddConnection(State fromState, State toState)
@@ -223,11 +229,19 @@ public class Model
         }
     }
 
+    public Connection AddConnectionDuplicates(State fromState, State toState)
+    {
+        Connection connection = new Connection(this, fromState, toState);
+        ConnectionDictionary.Add(connection.UniqueID, connection);
+        AddConnectionEvent?.Invoke(this, connection);
+        return connection;
+    }
+
     public Connection AddConnection(Connection connection)
     {
         ConnectionDictionary.Add(connection.UniqueID, connection);
         AddConnectionEvent?.Invoke(this, connection);
-        foreach(var rateEquationVariable in connection.RateEquation.RateEquationVariables)
+        foreach (var rateEquationVariable in connection.RateEquation.RateEquationVariables)
         {
             connection.RateEquation.InvokeAddRateEquationVariable(rateEquationVariable);
         }
@@ -249,7 +263,7 @@ public class Model
     {
         foreach (var connection in ConnectionDictionary)
         {
-           if (connection.Value.FromState == fromState && connection.Value.ToState == toState)
+            if (connection.Value.FromState == fromState && connection.Value.ToState == toState)
             {
                 return connection.Value;
             }
@@ -262,7 +276,8 @@ public class Model
         if (add)
         {
             UpdateModelStatesEvent += obj.UpdateModelStatesCallback;
-        } else
+        }
+        else
         {
             UpdateModelStatesEvent -= obj.UpdateModelStatesCallback;
         }
@@ -298,7 +313,8 @@ public class Model
         {
             AddStateEvent += obj.AddStateCallback;
             RemoveStateEvent += obj.RemoveStateCallback;
-        } else
+        }
+        else
         {
             AddStateEvent -= obj.AddStateCallback;
             RemoveStateEvent -= obj.RemoveStateCallback;
@@ -311,7 +327,8 @@ public class Model
         {
             AddRateEvent += obj.AddRateCallback;
             RemoveRateEvent += obj.RemoveRateCallback;
-        } else
+        }
+        else
         {
             AddRateEvent -= obj.AddRateCallback;
             RemoveRateEvent -= obj.RemoveRateCallback;
@@ -324,7 +341,6 @@ public class Model
         RemoveConnectionEvent += obj.RemoveConnectionCallback;
     }
 
-
     //public void run_DTM(float tau, int iterations)
     //{
     //    for (int i = 0; i < iterations; i++)
@@ -334,7 +350,7 @@ public class Model
     //}
 
     public void run_model_tau_leap(float tau, int iterations)
-    {        
+    {
         for (int i = 0; i < iterations; i++)
         {
             Driver.tau_adaptive(this, tau);
@@ -350,7 +366,6 @@ public class Model
             {
                 return;
             }
-            
         }
         StepForwardModelEvent?.Invoke(this, StateDictionary);
     }
@@ -364,4 +379,3 @@ public class Model
         StepBackwardModelEvent?.Invoke(this, StateDictionary);
     }
 }
-

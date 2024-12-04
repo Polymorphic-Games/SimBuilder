@@ -8,9 +8,11 @@ public class PoissonCustom
 
     private static uint GetUint()
     {
-        var rand = new System.Random();
-        uint m_z = (uint)rand.Next();
-        uint m_w = (uint)rand.Next();
+        //var rand = new System.Random();
+        uint seed = 1;
+        Unity.Mathematics.Random rnd = new Unity.Mathematics.Random(seed);
+        uint m_z = (uint)rnd.NextInt(Int32.MaxValue);
+        uint m_w = (uint)rnd.NextInt(Int32.MaxValue);
 
         m_z = 36969 * (m_z & 65535) + (m_z >> 16);
         m_w = 18000 * (m_w & 65535) + (m_w >> 16);
@@ -33,7 +35,9 @@ public class PoissonCustom
 
     public static int PoissonSmall(double lambda)
     {
-        System.Random rnd = new System.Random();
+        uint seed = 1;
+        Unity.Mathematics.Random rnd = new Unity.Mathematics.Random(seed);
+        //System.Random rnd = new System.Random();
         // Algorithm due to Donald Knuth, 1969.
         double p = 1.0, L = Math.Exp(-lambda);
         int k = 0;
