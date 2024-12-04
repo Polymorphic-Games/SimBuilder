@@ -383,6 +383,7 @@ GameObject:
   - component: {fileID: 1567396794}
   - component: {fileID: 1567396798}
   - component: {fileID: 1567396799}
+  - component: {fileID: 1567396800}
   m_Layer: 5
   m_Name: CanvasMain
   m_TagString: Untagged
@@ -494,6 +495,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 1567396793}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8cbc362cc5a0be8448c48708777fd3d0, type: 3}
+  m_Script: {fileID: 11500000, guid: 4cef03d028be6a6489a29218fbf954e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  numPopulationModelBins: 0
+  population: 
+  rateEquationStateVariableIndices: 
+--- !u!114 &1567396800
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1567396793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efbee77fe370eb942930681bc6a15dbc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
