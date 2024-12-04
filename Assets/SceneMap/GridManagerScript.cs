@@ -10,12 +10,14 @@ public class GridManagerScript : MediatorComponent
     [SerializeField] private int height;
     private float paddingX = 0;
     private float paddingY = 0;
-    private float paddingIncrement = .2f;
+    private float paddingIncrement = .02f;
     [SerializeField] private GameObject tilePrefab;
     private GameObject tile;
     private List<List<GameObject>> tiles = new();
-    Model[,] model;
-    public void GenerateGrid(Model globalModel, int width, int height)
+
+    public List<List<int>> populationInfected = new();
+
+    public void GenerateGrid(int width, int height)
     {
         tiles = new();
         paddingX = 0;
@@ -29,9 +31,9 @@ public class GridManagerScript : MediatorComponent
             tiles.Add(new List<GameObject>());
             for (int y = 0; y < height; y++)
             {
-                tile = Instantiate(tilePrefab, new Vector3(x+paddingX, y+paddingY), Quaternion.identity);
+                tile = Instantiate(tilePrefab, new Vector3(x - width / 2 + paddingX, y - height / 2 + paddingY), Quaternion.identity);
                 tiles[x].Add(tile);
-                tiles[x][y].GetComponent<TileScript>().model.LoadModel(globalModel);
+                //tiles[x][y].GetComponent<TileScript>().model.LoadModel(globalModel);
 
                 paddingY += paddingIncrement;
             }
@@ -39,28 +41,35 @@ public class GridManagerScript : MediatorComponent
             paddingY = 0;
             paddingX += paddingIncrement;
         }
-
     }
 
-    public void ColorGrid(List<List<Model>> gridModels)
+    public void colorCell(int i, int j, int population)
+    {
+        float redValue = (float)population / 10000f;
+        tiles[i][j].GetComponent<SpriteRenderer>().color = new UnityEngine.Color((float)redValue, 0, 0, 1);
+    }
+
+    public void colorGrid(Model model)
     {
         float redValue;
-        for (int i = 0; i < width; i++)
+
+        int i = 0;
+        foreach (var listListStates in model.states)
         {
-            for (int j = 0; j < height; j++)
+            int j = 0;
+            foreach (var listStates in listListStates)
             {
-                foreach (State state in gridModels[i][j].StateDictionary.Values)
+                foreach (var state in listStates)
                 {
                     if (state.Name == "I")
                     {
                         redValue = state.Value / 10000f;
-                        //redValue = 0.01f;
-                        tiles[i][j].GetComponent<SpriteRenderer>().color = new UnityEngine.Color((float) redValue, 0 ,0, 1);
+                        tiles[i][j].GetComponent<SpriteRenderer>().color = new UnityEngine.Color((float)redValue, 0, 0, 1);
                     }
                 }
+                j++;
             }
+            i++;
         }
     }
-
-
 }
